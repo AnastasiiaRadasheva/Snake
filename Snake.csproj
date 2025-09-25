@@ -8,4 +8,8 @@
     <StartupObject>Snake.SnakeMain</StartupObject>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NAudio.WaveFormRenderer" Version="2.0.0" />
+  </ItemGroup>
+
 </Project>

@@ -5,6 +5,17 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+//Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран.
+
+//Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или увеличивают скорость). +++++++++
+
+//Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты.
+
+//Разные уровни – при большем уровне увеличиваем уровень и ускоряем игру. ++++++++++++
+
+//Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием.
+
+
 
 namespace Snake
 {
@@ -29,6 +40,7 @@ namespace Snake
                 _ => 100
             };
             Console.Clear();
+
             Walls walls = new Walls(80, 25);
             walls.Draw();
 
@@ -36,12 +48,34 @@ namespace Snake
             Snake snake = new Snake(p, 4, Direction.RIGHT);
             snake.Draw();
 
-            FoodCreator foodCreator = new FoodCreator(80, 25, '$');
+            var symbolScores = new Dictionary<char, int>
+            {
+                { '$', 1 },
+                { '@', 2 },
+                { '¤', 0 }
+            };
+
+            FoodCreator foodCreator = new FoodCreator(80, 25, symbolScores);
             Point food = foodCreator.CreateFood();
             food.Draw();
 
-            StreamWriter to_file = new StreamWriter("GameResults.txt", true);
-            to_file.WriteLine("Mäng algas: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            int score = 0;
+
+            StreamWriter to_file = null;
+            try
+            {
+                to_file = new StreamWriter("GameResults.txt", true);
+                to_file.WriteLine("Mäng algas: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
+            catch (Exception ex)
+            {
+                Console.SetCursorPosition(0, 1);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Ошибка записи в файл: {ex.Message}");
+                Console.ResetColor();
+            }
+
+            DrawScore(score);
 
             while (true)
             {
@@ -54,6 +88,11 @@ namespace Snake
 
                 if (snake.Eat(food))
                 {
+                    int foodScore = foodCreator.GetScore(food.sym);
+                    score += foodScore;
+
+                    DrawScore(score);
+
                     food = foodCreator.CreateFood();
                     food.Draw();
                 }
@@ -62,17 +101,32 @@ namespace Snake
                     snake.Move();
                 }
 
-                Thread.Sleep(speed); 
+                Thread.Sleep(speed);
 
                 if (Console.KeyAvailable)
                 {
-                    ConsoleKeyInfo key = Console.ReadKey();
+                    ConsoleKeyInfo key = Console.ReadKey(true);
                     snake.HandleKey(key.Key);
                 }
             }
 
-            to_file.WriteLine("Tulemus: mäng lõppes");
-            to_file.Close();
+            try
+            {
+                if (to_file != null)
+                {
+                    to_file.WriteLine($"Tulemus: {score}"); 
+                    to_file.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    to_file.Flush();
+                    to_file.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.SetCursorPosition(0, 2);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ResetColor();
+            }
 
             StreamReader from_file = new StreamReader("GameResults.txt");
             string text = from_file.ReadToEnd();
@@ -81,6 +135,16 @@ namespace Snake
             from_file.Close();
 
             Console.ReadLine();
+        }
+
+        static void DrawScore(int score)
+        {
+            Console.SetCursorPosition(0, 0);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("Score:      ");
+            Console.SetCursorPosition(7, 0);
+            Console.Write(score);
+            Console.ResetColor();
         }
 
         static void WriteGameOver()
@@ -92,6 +156,7 @@ namespace Snake
             WriteText("============================", xOffset, yOffset++);
             WriteText("         MÄNG LÕPPES        ", xOffset + 1, yOffset++);
             WriteText("============================", xOffset, yOffset++);
+            Console.ResetColor();
         }
 
         static void WriteText(string text, int xOffset, int yOffset)

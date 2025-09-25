@@ -6,26 +6,35 @@ using System.Threading.Tasks;
 
 namespace Snake
 {
-     class FoodCreator
+    class FoodCreator
     {
         int mapWidht;
         int mapHeight;
-        char sym;
+        List<char> foodSymbols;
+        Dictionary<char, int> symbolScores;
 
         Random random = new Random();
 
-        public FoodCreator(int mapWidth, int mapHeight, char sym)
+        public FoodCreator(int mapWidth, int mapHeight, Dictionary<char, int> symbolScores)
         {
             this.mapWidht = mapWidth;
             this.mapHeight = mapHeight;
-            this.sym = sym;
+            this.symbolScores = symbolScores;
+            this.foodSymbols = symbolScores.Keys.ToList();
         }
 
         public Point CreateFood()
         {
             int x = random.Next(2, mapWidht - 2);
             int y = random.Next(2, mapHeight - 2);
+            char sym = foodSymbols[random.Next(foodSymbols.Count)];
             return new Point(x, y, sym);
+        }
+
+        public int GetScore(char sym)
+        {
+            return symbolScores.TryGetValue(sym, out int score) ? score : 0;
         }
     }
 }
+

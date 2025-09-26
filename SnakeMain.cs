@@ -21,7 +21,6 @@ namespace Snake
 {
     class SnakeMain
     {
-
         static int currentLevel = 1;
         static int mapWidth;
         static int mapHeight;
@@ -67,7 +66,6 @@ namespace Snake
 
         static void Main(string[] args)
         {
-
             GameSounds sounds = new GameSounds();
             NameService nameService = new NameService();
 
@@ -89,8 +87,8 @@ namespace Snake
 
             speed = startLevel switch
             {
-                1 => 150,
-                2 => 100,
+                1 => 120,
+                2 => 95,
                 3 => 30,
                 _ => 100
             };
@@ -129,18 +127,15 @@ namespace Snake
             {
                 Console.SetCursorPosition(0, 1);
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Ошибка записи в файл: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
                 Console.ResetColor();
             }
 
             DrawScore(score);
-
-
             sounds.PlayBackground();
 
             while (true)
             {
-
                 if (snake.Eat(food))
                 {
                     int foodScore = foodCreator.GetScore(food.sym);
@@ -165,21 +160,23 @@ namespace Snake
                 {
                     snake.Move();
                 }
+
                 if (walls.IsHit(snake) || snake.IsHitTail())
                 {
-
                     sounds.PlayGameOver();
-
                     Console.Beep(400, 500);
+                    Console.Clear();
+
                     WriteGameOver();
+
                     to_file?.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     string userName = nameService.AskUserName();
-                    nameService.SaveName(userName);
+                    to_file?.WriteLine("Nimi: " + userName);
+                    to_file?.WriteLine("Tulemus: " + score);
+                    to_file?.WriteLine("-------------------------");
 
                     break;
                 }
-
-
                 Thread.Sleep(speed);
 
                 if (Console.KeyAvailable)
@@ -193,10 +190,8 @@ namespace Snake
             {
                 if (to_file != null)
                 {
-                    to_file.WriteLine($"Tulemus: {score}");
-                    to_file.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    to_file.Flush();
-                    to_file.Close();
+                    to_file?.Flush();
+                    to_file?.Close();
                 }
             }
             catch (Exception ex)
@@ -212,10 +207,8 @@ namespace Snake
             Console.Clear();
             Console.WriteLine(text);
             from_file.Close();
-
             Console.ReadLine();
         }
-
 
         static void DrawScore(int score)
         {
@@ -245,4 +238,40 @@ namespace Snake
             Console.WriteLine(text);
         }
     }
+
+    //class NameService
+    //{
+    //    public string AskUserName()
+    //    {
+    //        string name = "";
+    //        while (true)
+    //        {
+    //            Console.Write("Sisesta nimi (vähemalt 3 tähte): ");
+    //            try
+    //            {
+    //                name = Console.ReadLine();
+    //                if (string.IsNullOrWhiteSpace(name) || name.Length < 3)
+    //                    throw new Exception("Liiga lühike nimi!");
+    //                break;
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                Console.ForegroundColor = ConsoleColor.Red;
+    //                Console.WriteLine("Viga: " + ex.Message);
+    //                Console.ResetColor();
+    //            }
+    //        }
+    //        return name;
+    //    }
+
+        //public void SaveName(string name)
+        //{
+        //    try
+        //    {
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("Faili viga: " + ex.Message);
+        //    }
+
 }

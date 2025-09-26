@@ -31,16 +31,5 @@ namespace Snake
             return name;
         }
 
-        public void SaveName(string name)
-        {
-            try
-            {
-                File.AppendAllText("Nimed.txt", name + Environment.NewLine);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Faili viga: " + ex.Message);
-            }
-        }
     }
 }

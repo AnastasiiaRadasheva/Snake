@@ -28,7 +28,7 @@ namespace Snake
             if (!File.Exists(path))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Файл не найден: {path}");
+                Console.WriteLine($" ei ole fail : {path}");
                 Console.ResetColor();
                 return new SoundPlayer();
             }

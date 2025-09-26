@@ -5,11 +5,11 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-//Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран.
+//Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран. ++++++++++++++
 
 //Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или увеличивают скорость). +++++++++
 
-//Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты.
+//Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты. +++++++++++++
 
 //Разные уровни – при большем уровне увеличиваем уровень и ускоряем игру. ++++++++++++
 
@@ -17,31 +17,84 @@ using System.Threading.Tasks;
 
 
 
+
 namespace Snake
 {
     class SnakeMain
     {
+        static int currentLevel = 1;
+        static int mapWidth;
+        static int mapHeight;
+        static int speed;
+
+        static void LevelUp(ref Walls walls, Snake snake,
+                    ref FoodCreator foodCreator,
+                    Dictionary<char, int> symbolScores,
+                    int score) 
+        {
+            if (currentLevel < 4 )
+            {
+                currentLevel++;
+
+                (mapWidth, mapHeight) = currentLevel switch
+                {
+                    1 => (60, 20),
+                    2 => (80, 25),
+                    3 => (100, 30),
+                    _ => (80, 25)
+                };
+
+                speed = currentLevel switch
+                {
+                    1 => 150,
+                    2 => 100,
+                    3 => 30,
+                    _ => 100
+                };
+
+                Console.SetWindowSize(mapWidth, mapHeight);
+                Console.SetBufferSize(mapWidth, mapHeight);
+                Console.Clear();
+
+                walls = new Walls(mapWidth, mapHeight);
+                walls.Draw();
+                snake.Draw();
+                foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
+                DrawScore(score);
+            }
+        }
+
         static void Main(string[] args)
         {
-            Console.SetWindowSize(80, 25);
-            Console.SetBufferSize(80, 25);
             Console.WriteLine("Valige raskusaste:");
             Console.WriteLine("1 - Lihtne");
             Console.WriteLine("2 - Keskmine");
             Console.WriteLine("3 - Raske");
             Console.Write("Sisestage raskusaste: ");
-            int level = int.Parse(Console.ReadLine());
+            int startLevel = int.Parse(Console.ReadLine());
+            currentLevel = startLevel;
 
-            int speed = level switch
+            (mapWidth, mapHeight) = startLevel switch
+            {
+                1 => (60, 20),
+                2 => (80, 25),
+                3 => (100, 30),
+                _ => (80, 25)
+            };
+
+            speed = startLevel switch
             {
                 1 => 150,
                 2 => 100,
                 3 => 30,
                 _ => 100
             };
+
+            Console.SetWindowSize(mapWidth, mapHeight);
+            Console.SetBufferSize(mapWidth, mapHeight);
             Console.Clear();
 
-            Walls walls = new Walls(80, 25);
+            Walls walls = new Walls(mapWidth, mapHeight);
             walls.Draw();
 
             Point p = new Point(4, 5, '*');
@@ -50,17 +103,16 @@ namespace Snake
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 1 },
-                { '@', 2 },
-                { '¤', 0 }
+                { '$', 5 },
+                { '@', 5 },
+                { '¤', 5 }
             };
 
-            FoodCreator foodCreator = new FoodCreator(80, 25, symbolScores);
+            FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
             Point food = foodCreator.CreateFood();
             food.Draw();
 
             int score = 0;
-
             StreamWriter to_file = null;
             try
             {
@@ -81,8 +133,9 @@ namespace Snake
             {
                 if (walls.IsHit(snake) || snake.IsHitTail())
                 {
+                    Console.Beep(400, 500);
                     WriteGameOver();
-                    to_file.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    to_file?.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     break;
                 }
 
@@ -90,11 +143,18 @@ namespace Snake
                 {
                     int foodScore = foodCreator.GetScore(food.sym);
                     score += foodScore;
-
+                    Console.Beep(1000, 150);
                     DrawScore(score);
 
                     food = foodCreator.CreateFood();
                     food.Draw();
+
+                    if (score >= 5 * currentLevel && currentLevel < 3)
+                    {
+                        LevelUp(ref walls, snake, ref foodCreator, symbolScores, score);
+                        food = foodCreator.CreateFood();
+                        food.Draw();
+                    }
                 }
                 else
                 {
@@ -114,7 +174,7 @@ namespace Snake
             {
                 if (to_file != null)
                 {
-                    to_file.WriteLine($"Tulemus: {score}"); 
+                    to_file.WriteLine($"Tulemus: {score}");
                     to_file.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     to_file.Flush();
                     to_file.Close();

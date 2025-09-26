@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Snake
 {
-    internal class HPsnake
+     class HPsnake
     {
     }
 }

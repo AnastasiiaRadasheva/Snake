@@ -5,9 +5,13 @@ using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
+
+
+
 //Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран. ++++++++++++++
 
-//Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или увеличивают скорость). +++++++++
+//Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или +2 к очкам вместо +1). +++++++++
 
 //Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты. +++++++++++++
 
@@ -15,7 +19,10 @@ using System.Threading.Tasks;
 
 //Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием. +++++++++++
 
-//Записывается имя игрока и отдельно счет ++++++++++++++
+//Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
+
+
+
 
 namespace Snake
 {
@@ -31,7 +38,7 @@ namespace Snake
                             Dictionary<char, int> symbolScores,
                             int score)
         {
-            if (currentLevel < 3)
+            if (currentLevel < 4)
             {
                 currentLevel++;
 
@@ -68,13 +75,10 @@ namespace Snake
         {
             GameSounds sounds = new GameSounds();
             NameService nameService = new NameService();
+            ScoreManager scoreManager = new ScoreManager();
+            MenuService menuService = new MenuService();
 
-            Console.WriteLine("Valige raskusaste:");
-            Console.WriteLine("1 - Lihtne");
-            Console.WriteLine("2 - Keskmine");
-            Console.WriteLine("3 - Raske");
-            Console.Write("Sisestage raskusaste: ");
-            int startLevel = int.Parse(Console.ReadLine());
+            int startLevel = menuService.ShowDifficultyMenu();
             currentLevel = startLevel;
 
             (mapWidth, mapHeight) = startLevel switch
@@ -108,6 +112,7 @@ namespace Snake
             {
                 { '$', 1 },
                 { '@', 2 },
+                { '#', -1 },
                 { '¤', 0 }
             };
 
@@ -116,20 +121,6 @@ namespace Snake
             food.Draw();
 
             int score = 0;
-
-            StreamWriter to_file = null;
-            try
-            {
-                to_file = new StreamWriter("GameResults.txt", true);
-                to_file.WriteLine("Mäng algas: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            }
-            catch (Exception ex)
-            {
-                Console.SetCursorPosition(0, 1);
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.ResetColor();
-            }
 
             DrawScore(score);
             sounds.PlayBackground();
@@ -169,11 +160,9 @@ namespace Snake
 
                     WriteGameOver();
 
-                    to_file?.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     string userName = nameService.AskUserName();
-                    to_file?.WriteLine("Nimi: " + userName);
-                    to_file?.WriteLine("Tulemus: " + score);
-                    to_file?.WriteLine("-------------------------");
+
+                    scoreManager.SaveScore(userName, score);
 
                     break;
                 }
@@ -186,27 +175,9 @@ namespace Snake
                 }
             }
 
-            try
-            {
-                if (to_file != null)
-                {
-                    to_file?.Flush();
-                    to_file?.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.SetCursorPosition(0, 2);
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.ResetColor();
-            }
-
-            StreamReader from_file = new StreamReader("GameResults.txt");
-            string text = from_file.ReadToEnd();
+            string gameResults = scoreManager.ReadScores();
             Console.Clear();
-            Console.WriteLine(text);
-            from_file.Close();
+            Console.WriteLine(gameResults);
             Console.ReadLine();
         }
 
@@ -227,7 +198,7 @@ namespace Snake
             Console.ForegroundColor = ConsoleColor.Red;
             Console.SetCursorPosition(xOffset, yOffset++);
             WriteText("============================", xOffset, yOffset++);
-            WriteText("         MÄNG LÕPPES        ", xOffset + 1, yOffset++);
+            WriteText("          GAME OVER         ", xOffset + 1, yOffset++);
             WriteText("============================", xOffset, yOffset++);
             Console.ResetColor();
         }
@@ -238,40 +209,40 @@ namespace Snake
             Console.WriteLine(text);
         }
     }
-
-    //class NameService
-    //{
-    //    public string AskUserName()
-    //    {
-    //        string name = "";
-    //        while (true)
-    //        {
-    //            Console.Write("Sisesta nimi (vähemalt 3 tähte): ");
-    //            try
-    //            {
-    //                name = Console.ReadLine();
-    //                if (string.IsNullOrWhiteSpace(name) || name.Length < 3)
-    //                    throw new Exception("Liiga lühike nimi!");
-    //                break;
-    //            }
-    //            catch (Exception ex)
-    //            {
-    //                Console.ForegroundColor = ConsoleColor.Red;
-    //                Console.WriteLine("Viga: " + ex.Message);
-    //                Console.ResetColor();
-    //            }
-    //        }
-    //        return name;
-    //    }
-
-        //public void SaveName(string name)
-        //{
-        //    try
-        //    {
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Faili viga: " + ex.Message);
-        //    }
-
 }
+
+//class NameService
+//{
+//    public string AskUserName()
+//    {
+//        string name = "";
+//        while (true)
+//        {
+//            Console.Write("Sisesta nimi (vähemalt 3 tähte): ");
+//            try
+//            {
+//                name = Console.ReadLine();
+//                if (string.IsNullOrWhiteSpace(name) || name.Length < 3)
+//                    throw new Exception("Liiga lühike nimi!");
+//                break;
+//            }
+//            catch (Exception ex)
+//            {
+//                Console.ForegroundColor = ConsoleColor.Red;
+//                Console.WriteLine("Viga: " + ex.Message);
+//                Console.ResetColor();
+//            }
+//        }
+//        return name;
+//    }
+
+//public void SaveName(string name)
+//{
+//    try
+//    {
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine("Faili viga: " + ex.Message);
+//    }
+

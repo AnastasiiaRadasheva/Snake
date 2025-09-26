@@ -13,26 +13,26 @@ using System.Threading.Tasks;
 
 //Разные уровни – при большем уровне увеличиваем уровень и ускоряем игру. ++++++++++++
 
-//Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием.
+//Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием. +++++++++++
 
-
-
+//Записывается имя игрока и отдельно счет ++++++++++++++
 
 namespace Snake
 {
     class SnakeMain
     {
+
         static int currentLevel = 1;
         static int mapWidth;
         static int mapHeight;
         static int speed;
 
         static void LevelUp(ref Walls walls, Snake snake,
-                    ref FoodCreator foodCreator,
-                    Dictionary<char, int> symbolScores,
-                    int score) 
+                            ref FoodCreator foodCreator,
+                            Dictionary<char, int> symbolScores,
+                            int score)
         {
-            if (currentLevel < 4 )
+            if (currentLevel < 3)
             {
                 currentLevel++;
 
@@ -60,12 +60,17 @@ namespace Snake
                 walls.Draw();
                 snake.Draw();
                 foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
+
                 DrawScore(score);
             }
         }
 
         static void Main(string[] args)
         {
+
+            GameSounds sounds = new GameSounds();
+            NameService nameService = new NameService();
+
             Console.WriteLine("Valige raskusaste:");
             Console.WriteLine("1 - Lihtne");
             Console.WriteLine("2 - Keskmine");
@@ -103,9 +108,9 @@ namespace Snake
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 5 },
-                { '@', 5 },
-                { '¤', 5 }
+                { '$', 1 },
+                { '@', 2 },
+                { '¤', 0 }
             };
 
             FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
@@ -113,6 +118,7 @@ namespace Snake
             food.Draw();
 
             int score = 0;
+
             StreamWriter to_file = null;
             try
             {
@@ -129,20 +135,18 @@ namespace Snake
 
             DrawScore(score);
 
+
+            sounds.PlayBackground();
+
             while (true)
             {
-                if (walls.IsHit(snake) || snake.IsHitTail())
-                {
-                    Console.Beep(400, 500);
-                    WriteGameOver();
-                    to_file?.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    break;
-                }
 
                 if (snake.Eat(food))
                 {
                     int foodScore = foodCreator.GetScore(food.sym);
                     score += foodScore;
+
+                    sounds.PlayEat();
                     Console.Beep(1000, 150);
                     DrawScore(score);
 
@@ -152,6 +156,7 @@ namespace Snake
                     if (score >= 5 * currentLevel && currentLevel < 3)
                     {
                         LevelUp(ref walls, snake, ref foodCreator, symbolScores, score);
+
                         food = foodCreator.CreateFood();
                         food.Draw();
                     }
@@ -160,6 +165,20 @@ namespace Snake
                 {
                     snake.Move();
                 }
+                if (walls.IsHit(snake) || snake.IsHitTail())
+                {
+
+                    sounds.PlayGameOver();
+
+                    Console.Beep(400, 500);
+                    WriteGameOver();
+                    to_file?.WriteLine("Mäng lõppes: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    string userName = nameService.AskUserName();
+                    nameService.SaveName(userName);
+
+                    break;
+                }
+
 
                 Thread.Sleep(speed);
 
@@ -196,6 +215,7 @@ namespace Snake
 
             Console.ReadLine();
         }
+
 
         static void DrawScore(int score)
         {

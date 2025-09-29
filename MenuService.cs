@@ -10,31 +10,31 @@ namespace Snake
     {
         public int ShowDifficultyMenu()
         {
-            // Clear console and display title
+
             Console.Clear();
-            Console.SetWindowSize(90, 25); // Adjust window size to fit the ASCII art
-            Console.SetBufferSize(90, 25); // Adjust buffer size as well
+            Console.SetWindowSize(90, 25); 
+            Console.SetBufferSize(90, 25); 
             Console.CursorVisible = false;
 
 
             Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.SetCursorPosition(10, 3); 
-            Console.WriteLine("▄████████ ███▄▄▄▄      ▄████████    ▄█   ▄█▄    ▄████████");
-            Console.SetCursorPosition(10, 4);
+            Console.SetCursorPosition(25, 3); 
+            Console.WriteLine("▄████████ ███▄▄▄▄      ▄████████    ▄█   ▄█▄    ▄████████▄");
+            Console.SetCursorPosition(25, 4);
             Console.WriteLine(" ███    ███ ███▀▀▀██▄   ███    ███   ███ ▄███▀   ███    ███");
-            Console.SetCursorPosition(10, 5);
+            Console.SetCursorPosition(25, 5);
             Console.WriteLine(" ███    █▀  ███   ███   ███    ███   ███▐██▀     ███    █▀ ");
-            Console.SetCursorPosition(10, 6);
+            Console.SetCursorPosition(25, 6);
             Console.WriteLine(" ███        ███   ███   ███    ███  ▄█████▀     ▄███▄▄▄     ");
-            Console.SetCursorPosition(10, 7);
+            Console.SetCursorPosition(25, 7);
             Console.WriteLine("▀███████████ ███   ███ ▀███████████ ▀▀█████▄    ▀▀███▀▀▀     ");
-            Console.SetCursorPosition(10, 8);
+            Console.SetCursorPosition(25, 8);
             Console.WriteLine("         ███ ███   ███   ███    ███   ███▐██▄     ███    █▄  ");
-            Console.SetCursorPosition(10, 9);
+            Console.SetCursorPosition(25, 9);
             Console.WriteLine("   ▄█    ███ ███   ███   ███    ███   ███ ▀███▄   ███    ███ ");
-            Console.SetCursorPosition(10, 10);
+            Console.SetCursorPosition(25, 10);
             Console.WriteLine(" ▄████████▀   ▀█   █▀    ███    █▀    ███   ▀█▀   ██████████ ");
-            Console.SetCursorPosition(10, 11);
+            Console.SetCursorPosition(25, 11);
             Console.WriteLine("                                      ▀                       ");
             Console.ResetColor();
 

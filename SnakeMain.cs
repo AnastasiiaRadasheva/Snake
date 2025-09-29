@@ -21,18 +21,9 @@ using System.Threading.Tasks;
 
 //Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
 
-// 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Реализовано красивое менюю. ++++++++++++++++++
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Вывод проигрыша или победы (при достижении 3 уровня и 25 очков).++++++++++++++
 
 namespace Snake
 {
@@ -178,6 +169,7 @@ namespace Snake
                     }
                     if (score >= 25)
                     {
+                        Console.Clear();
                         ShowVictoryMessage();
                         Thread.Sleep(2000); 
 
@@ -235,6 +227,7 @@ namespace Snake
 
         static void WriteGameOver()
         {
+
             int xOffset = 23;
             int yOffset = 10;
             Console.ForegroundColor = ConsoleColor.Red;

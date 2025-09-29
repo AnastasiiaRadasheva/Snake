@@ -10,34 +10,81 @@ namespace Snake
     {
         public int ShowDifficultyMenu()
         {
+            // Clear console and display title
             Console.Clear();
+            Console.SetWindowSize(90, 25); // Adjust window size to fit the ASCII art
+            Console.SetBufferSize(90, 25); // Adjust buffer size as well
+            Console.CursorVisible = false;
+
+
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.SetCursorPosition(10, 3); 
+            Console.WriteLine("▄████████ ███▄▄▄▄      ▄████████    ▄█   ▄█▄    ▄████████");
+            Console.SetCursorPosition(10, 4);
+            Console.WriteLine(" ███    ███ ███▀▀▀██▄   ███    ███   ███ ▄███▀   ███    ███");
+            Console.SetCursorPosition(10, 5);
+            Console.WriteLine(" ███    █▀  ███   ███   ███    ███   ███▐██▀     ███    █▀ ");
+            Console.SetCursorPosition(10, 6);
+            Console.WriteLine(" ███        ███   ███   ███    ███  ▄█████▀     ▄███▄▄▄     ");
+            Console.SetCursorPosition(10, 7);
+            Console.WriteLine("▀███████████ ███   ███ ▀███████████ ▀▀█████▄    ▀▀███▀▀▀     ");
+            Console.SetCursorPosition(10, 8);
+            Console.WriteLine("         ███ ███   ███   ███    ███   ███▐██▄     ███    █▄  ");
+            Console.SetCursorPosition(10, 9);
+            Console.WriteLine("   ▄█    ███ ███   ███   ███    ███   ███ ▀███▄   ███    ███ ");
+            Console.SetCursorPosition(10, 10);
+            Console.WriteLine(" ▄████████▀   ▀█   █▀    ███    █▀    ███   ▀█▀   ██████████ ");
+            Console.SetCursorPosition(10, 11);
+            Console.WriteLine("                                      ▀                       ");
+            Console.ResetColor();
+
+            string[] options = { "Lihtne", "Keskmine", "Raske" };
+            int selectedOption = 0; 
+
+
+            Console.SetCursorPosition(35, 13); 
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Valige raskusaste:");
-            Console.WriteLine("1 - Lihtne");
-            Console.WriteLine("2 - Keskmine");
-            Console.WriteLine("3 - Raske");
-            Console.Write("Sisestage raskusaste: ");
-            int difficultyLevel;
+
 
             while (true)
             {
-                try
+              
+                for (int i = 0; i < options.Length; i++)
                 {
-                    difficultyLevel = int.Parse(Console.ReadLine());
-                    if (difficultyLevel < 1 || difficultyLevel > 3)
+                    Console.SetCursorPosition(35, 14 + i);
+                    if (i == selectedOption)
                     {
-                        throw new Exception("Vali! Sisent 1, 2 or 3.");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("► "); 
                     }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.Write("  ");  
+                    }
+
+                    Console.WriteLine(options[i]);
+                    Console.ResetColor();
+                }
+
+                ConsoleKeyInfo key = Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.UpArrow)
+                {
+                    selectedOption = (selectedOption == 0) ? options.Length - 1 : selectedOption - 1; 
+                }
+                else if (key.Key == ConsoleKey.DownArrow)
+                {
+                    selectedOption = (selectedOption == options.Length - 1) ? 0 : selectedOption + 1; 
+                }
+                else if (key.Key == ConsoleKey.Enter)
+                {
                     break;
                 }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(ex.Message);
-                    Console.ResetColor();
-                    Console.Write("Попробуйте снова: ");
-                }
             }
-            return difficultyLevel;
+
+            return selectedOption + 1;
         }
     }
 }

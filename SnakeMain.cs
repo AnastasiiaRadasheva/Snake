@@ -21,8 +21,18 @@ using System.Threading.Tasks;
 
 //Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
 
+// 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Snake
 {
@@ -34,14 +44,13 @@ namespace Snake
         static int speed;
 
         static void LevelUp(ref Walls walls, Snake snake,
-                            ref FoodCreator foodCreator,
-                            Dictionary<char, int> symbolScores,
-                            int score)
+                    ref FoodCreator foodCreator,
+                    Dictionary<char, int> symbolScores,
+                    int score)
         {
-            if (currentLevel < 4)
+            if (currentLevel < 3)
             {
                 currentLevel++;
-
                 (mapWidth, mapHeight) = currentLevel switch
                 {
                     1 => (60, 20),
@@ -54,7 +63,7 @@ namespace Snake
                 {
                     1 => 150,
                     2 => 100,
-                    3 => 30,
+                    3 => 70,
                     _ => 100
                 };
 
@@ -68,7 +77,28 @@ namespace Snake
                 foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
 
                 DrawScore(score);
+                DrawLevel(currentLevel);
             }
+        }
+
+        static void DrawLevel(int level)
+        {
+            Console.SetCursorPosition(mapWidth - 12, 0);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Level: " + level);
+            Console.ResetColor();
+        }
+
+        static void ShowVictoryMessage()
+        {
+            int xOffset = 23;
+            int yOffset = 10;
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.SetCursorPosition(xOffset, yOffset++);
+            WriteText("============================", xOffset, yOffset++);
+            WriteText("          YOU WIN!           ", xOffset + 1, yOffset++);
+            WriteText("============================", xOffset, yOffset++);
+            Console.ResetColor();
         }
 
         static void Main(string[] args)
@@ -80,6 +110,7 @@ namespace Snake
 
             int startLevel = menuService.ShowDifficultyMenu();
             currentLevel = startLevel;
+            Console.Clear();
 
             (mapWidth, mapHeight) = startLevel switch
             {
@@ -92,7 +123,7 @@ namespace Snake
             speed = startLevel switch
             {
                 1 => 120,
-                2 => 95,
+                2 => 80,
                 3 => 30,
                 _ => 100
             };
@@ -110,10 +141,10 @@ namespace Snake
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 1 },
-                { '@', 2 },
-                { '#', -1 },
-                { '¤', 0 }
+                { '$', 4 },
+                { '@', 4 },
+                { '#', 4 },
+                { '¤', 4 }
             };
 
             FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
@@ -124,7 +155,6 @@ namespace Snake
 
             DrawScore(score);
             sounds.PlayBackground();
-
             while (true)
             {
                 if (snake.Eat(food))
@@ -135,6 +165,7 @@ namespace Snake
                     sounds.PlayEat();
                     Console.Beep(1000, 150);
                     DrawScore(score);
+                    DrawLevel(currentLevel);
 
                     food = foodCreator.CreateFood();
                     food.Draw();
@@ -142,9 +173,20 @@ namespace Snake
                     if (score >= 5 * currentLevel && currentLevel < 3)
                     {
                         LevelUp(ref walls, snake, ref foodCreator, symbolScores, score);
-
                         food = foodCreator.CreateFood();
                         food.Draw();
+                    }
+                    if (score >= 25)
+                    {
+                        ShowVictoryMessage();
+                        Thread.Sleep(2000); 
+
+
+                        string userName = nameService.AskUserName();
+
+                        scoreManager.SaveScore(userName, score);
+
+                        break;
                     }
                 }
                 else
@@ -211,6 +253,8 @@ namespace Snake
     }
 }
 
+
+
 //class NameService
 //{
 //    public string AskUserName()
@@ -245,4 +289,15 @@ namespace Snake
 //    {
 //        Console.WriteLine("Faili viga: " + ex.Message);
 //    }
+
+
+//________ ________   ________  ___  __    _______      
+//|\   ____\|\   ___  \|\   __  \|\  \|\  \ |\  ___ \     
+//\ \  \___|\ \  \\ \  \ \  \|\  \ \  \/  /|\ \   __/|    
+// \ \_____  \ \  \\ \  \ \   __  \ \   ___  \ \  \_|/__  
+//  \|____|\  \ \  \\ \  \ \  \ \  \ \  \\ \  \ \  \_|\ \ 
+//    ____\_\  \ \__\\ \__\ \__\ \__\ \__\\ \__\ \_______\
+//   |\_________\|__| \|__|\|__|\|__|\|__| \|__|\|_______|
+//   \|_________|                                         
+
 

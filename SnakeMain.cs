@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 
 // Вывод проигрыша или победы (при достижении 3 уровня и 25 очков).++++++++++++++
 
+
+
 namespace Snake
 {
     class SnakeMain
@@ -82,8 +84,9 @@ namespace Snake
 
         static void ShowVictoryMessage()
         {
-            int xOffset = 23;
-            int yOffset = 10;
+
+            int xOffset = 40;
+            int yOffset = 12;
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.SetCursorPosition(xOffset, yOffset++);
             WriteText("============================", xOffset, yOffset++);
@@ -132,10 +135,10 @@ namespace Snake
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 4 },
-                { '@', 4 },
-                { '#', 4 },
-                { '¤', 4 }
+                { '$', 25 },
+                { '@', 25 },
+                { '#', 25 },
+                { '¤', 25 }
             };
 
             FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
@@ -154,7 +157,6 @@ namespace Snake
                     score += foodScore;
 
                     sounds.PlayEat();
-                    Console.Beep(1000, 150);
                     DrawScore(score);
                     DrawLevel(currentLevel);
 
@@ -189,7 +191,6 @@ namespace Snake
                 if (walls.IsHit(snake) || snake.IsHitTail())
                 {
                     sounds.PlayGameOver();
-                    Console.Beep(400, 500);
                     Console.Clear();
 
                     WriteGameOver();
@@ -228,12 +229,12 @@ namespace Snake
         static void WriteGameOver()
         {
 
-            int xOffset = 23;
-            int yOffset = 10;
+            int xOffset = 40;
+            int yOffset = 12;
             Console.ForegroundColor = ConsoleColor.Red;
             Console.SetCursorPosition(xOffset, yOffset++);
             WriteText("============================", xOffset, yOffset++);
-            WriteText("          GAME OVER         ", xOffset + 1, yOffset++);
+            WriteText("         GAME OVER          ", xOffset + 1, yOffset++);
             WriteText("============================", xOffset, yOffset++);
             Console.ResetColor();
         }

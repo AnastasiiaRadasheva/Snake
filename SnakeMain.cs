@@ -82,19 +82,8 @@ namespace Snake
             Console.ResetColor();
         }
 
-        static void ShowVictoryMessage()
-        {
-
-            int xOffset = 40;
-            int yOffset = 12;
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.SetCursorPosition(xOffset, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            WriteText("          YOU WIN!           ", xOffset + 1, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            Console.ResetColor();
-        }
-
+        
+        static bool isEndlessMode = false;
         static void Main(string[] args)
         {
             GameSounds sounds = new GameSounds();
@@ -116,9 +105,9 @@ namespace Snake
 
             speed = startLevel switch
             {
-                1 => 120,
-                2 => 80,
-                3 => 30,
+                1 => 150,
+                2 => 100,
+                3 => 70,
                 _ => 100
             };
 
@@ -135,10 +124,10 @@ namespace Snake
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 25 },
-                { '@', 25 },
-                { '#', 25 },
-                { '¤', 25 }
+                { '$', 24 },
+                { '@', 24 },
+                { '#', 24 },
+                { '¤', 24 }
             };
 
             FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
@@ -149,6 +138,11 @@ namespace Snake
 
             DrawScore(score);
             sounds.PlayBackground();
+
+
+
+
+
             while (true)
             {
                 if (snake.Eat(food))
@@ -169,18 +163,36 @@ namespace Snake
                         food = foodCreator.CreateFood();
                         food.Draw();
                     }
-                    if (score >= 25)
+                    if (score >= 25 && !isEndlessMode)
                     {
                         Console.Clear();
                         ShowVictoryMessage();
-                        Thread.Sleep(2000); 
+                        Thread.Sleep(2000);
 
+                        Console.WriteLine("Kas sa tahad mängida edasi lõpmatus režiimis?");
+                        string vastus = Console.ReadLine();
+                        if (vastus.ToLower() == "jah" || vastus.ToLower() == "j")
+                        {
+                            isEndlessMode = true;
 
-                        string userName = nameService.AskUserName();
-
-                        scoreManager.SaveScore(userName, score);
-
-                        break;
+                            Console.Clear();
+                            walls.Draw();
+                            snake.Draw();
+                            DrawScore(score);
+                            DrawLevel(currentLevel);
+                            food = foodCreator.CreateFood();
+                            food.Draw();
+                            continue; 
+                        }
+                        else
+                        {
+                            sounds.PlayGameOver();
+                            Console.Clear();
+                            WriteGameOver();
+                            string userName = nameService.AskUserName();
+                            scoreManager.SaveScore(userName, score);
+                            break;
+                        }
                     }
                 }
                 else
@@ -238,12 +250,25 @@ namespace Snake
             WriteText("============================", xOffset, yOffset++);
             Console.ResetColor();
         }
+        static void ShowVictoryMessage()
+        {
+
+            int xOffset = 40;
+            int yOffset = 12;
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.SetCursorPosition(xOffset, yOffset++);
+            WriteText("============================", xOffset, yOffset++);
+            WriteText("          YOU WIN!           ", xOffset + 1, yOffset++);
+            WriteText("============================", xOffset, yOffset++);
+            Console.ResetColor();
+        }
 
         static void WriteText(string text, int xOffset, int yOffset)
         {
             Console.SetCursorPosition(xOffset, yOffset);
             Console.WriteLine(text);
         }
+
     }
 }
 

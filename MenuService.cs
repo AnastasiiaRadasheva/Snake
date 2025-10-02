@@ -52,7 +52,7 @@ namespace Snake
                     if (i == selectedOption)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write("► ");
+                        Console.Write("►  ");
                     }
                     else
                     {
@@ -63,6 +63,8 @@ namespace Snake
                     Console.WriteLine(options[i]);
                     Console.ResetColor();
                 }
+
+
 
                 ConsoleKeyInfo key = Console.ReadKey(true);
 

@@ -69,7 +69,6 @@ namespace Snake
             Point head = GetNextPoint();
             if (head.IsHit(food))
             {
-                // Добавляем новую голову с символом змейки, а не еды
                 Point newHead = new Point(food.x, food.y, pList.Last().sym);
                 pList.Add(newHead);
                 newHead.Draw();

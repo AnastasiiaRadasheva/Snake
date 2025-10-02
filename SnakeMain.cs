@@ -7,26 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-
-
-//Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран. ++++++++++++++
-
-//Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или +2 к очкам вместо +1). +++++++++
-
-//Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты. +++++++++++++
-
-//Разные уровни – при большем уровне увеличиваем уровень и ускоряем игру. ++++++++++++
-
-//Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием. +++++++++++
-
-//Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
-
-// Реализовано красивое менюю. ++++++++++++++++++
-
-// Вывод проигрыша или победы (при достижении 3 уровня и 25 очков).++++++++++++++
-
-
-
 namespace Snake
 {
     class SnakeMain
@@ -57,7 +37,7 @@ namespace Snake
                     1 => 150,
                     2 => 100,
                     3 => 70,
-                    _ => 100
+                    _ => 20
                 };
 
                 Console.SetWindowSize(mapWidth, mapHeight);
@@ -108,7 +88,7 @@ namespace Snake
                 1 => 150,
                 2 => 100,
                 3 => 70,
-                _ => 100
+                _ => 20
             };
 
             Console.SetWindowSize(mapWidth, mapHeight);
@@ -118,30 +98,33 @@ namespace Snake
             Walls walls = new Walls(mapWidth, mapHeight);
             walls.Draw();
 
+
+            Obstacles obstacles = new Obstacles(mapWidth, mapHeight, 10);
+            obstacles.Draw();
+
             Point p = new Point(4, 5, '*');
             Snake snake = new Snake(p, 4, Direction.RIGHT);
             snake.Draw();
 
             var symbolScores = new Dictionary<char, int>
             {
-                { '$', 24 },
-                { '@', 24 },
-                { '#', 24 },
-                { '¤', 24 }
+                { '$', 25 },
+                { '@', 25 },
+                { '#', 25 },
+                { '¤', 25 }
             };
 
-            FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
+
+            FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
             Point food = foodCreator.CreateFood();
             food.Draw();
 
             int score = 0;
 
             DrawScore(score);
+            DrawLevel(currentLevel);
+
             sounds.PlayBackground();
-
-
-
-
 
             while (true)
             {
@@ -157,38 +140,55 @@ namespace Snake
                     food = foodCreator.CreateFood();
                     food.Draw();
 
-                    if (score >= 5 * currentLevel && currentLevel < 3)
+                    if (!isEndlessMode && score >= 5 * currentLevel && currentLevel < 3)
                     {
                         LevelUp(ref walls, snake, ref foodCreator, symbolScores, score);
+                        obstacles = new Obstacles(mapWidth, mapHeight, 10); 
+                        obstacles.Draw();
+
+                        foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
                         food = foodCreator.CreateFood();
                         food.Draw();
                     }
+
+           
                     if (score >= 25 && !isEndlessMode)
                     {
                         Console.Clear();
                         ShowVictoryMessage();
                         Thread.Sleep(2000);
 
-                        Console.WriteLine("Kas sa tahad mängida edasi lõpmatus režiimis?");
+                        Console.WriteLine("Kas soovid mängida edasi lõpmatus režiimis? (jah/ei)");
                         string vastus = Console.ReadLine();
                         if (vastus.ToLower() == "jah" || vastus.ToLower() == "j")
                         {
                             isEndlessMode = true;
-
                             Console.Clear();
+
+
+                            Console.SetWindowSize(mapWidth, mapHeight);
+                            Console.SetBufferSize(mapWidth, mapHeight);
+                            Console.Clear();
+
                             walls.Draw();
+                            obstacles.Draw();
+
+                            snake = new Snake(new Point(4, 5, '*'), 4, Direction.RIGHT);
                             snake.Draw();
-                            DrawScore(score);
-                            DrawLevel(currentLevel);
+
+                            foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
                             food = foodCreator.CreateFood();
                             food.Draw();
-                            continue; 
+
+                            DrawScore(score);
+
+                            continue;
                         }
                         else
                         {
                             sounds.PlayGameOver();
                             Console.Clear();
-                            WriteGameOver();
+
                             string userName = nameService.AskUserName();
                             scoreManager.SaveScore(userName, score);
                             break;
@@ -200,19 +200,18 @@ namespace Snake
                     snake.Move();
                 }
 
-                if (walls.IsHit(snake) || snake.IsHitTail())
+                if (walls.IsHit(snake) || snake.IsHitTail() || obstacles.IsHit(snake.GetHead()))
                 {
                     sounds.PlayGameOver();
                     Console.Clear();
-
                     WriteGameOver();
 
                     string userName = nameService.AskUserName();
-
                     scoreManager.SaveScore(userName, score);
 
                     break;
                 }
+
                 Thread.Sleep(speed);
 
                 if (Console.KeyAvailable)
@@ -271,6 +270,39 @@ namespace Snake
 
     }
 }
+
+
+
+
+
+
+
+//Счетчик очков– Увеличиваем очки при поедании еды и выводим их на экран. ++++++++++++++
+
+//Типы еды – Добавляем разные виды еды (нормальная, вредная, полезная) с разными эффектами (уменьшают очки или +2 к очкам вместо +1). +++++++++
+
+//Уровни сложности – Сложность меняется с уровнем: увеличивается скорость и размер карты. +++++++++++++
+
+//Разные уровни – при большем уровне увеличиваем уровень и ускоряем игру. ++++++++++++
+
+//Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием. +++++++++++
+
+//Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
+
+// Реализовано красивое менюю. ++++++++++++++++++
+
+// Вывод проигрыша или победы (при достижении 3 уровня и 25 очков).++++++++++++++
+
+// Возможность играть в бесконечном режиме после победы. ++++++++++++++++
+
+// Возможность сохранять и смотреть результаты прошлых игр. ++++++++++++++++
+
+
+
+
+
+
+
 
 
 

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Snake;
+
+
 
 namespace Snake
 {
@@ -77,5 +80,10 @@ namespace Snake
             else
                 return false;
         }
+        public Point GetHead()
+        {
+            return pList.Last();
+        }
+
     }
 }

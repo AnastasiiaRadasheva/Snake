@@ -14,9 +14,11 @@ namespace Snake
         int mapHeight;
         List<char> foodSymbols;
         Dictionary<char, int> symbolScores;
-        List<Point> obstacles;  
+        List<Point> obstacles;
 
         Random random = new Random();
+
+        public Point CurrentFood { get; private set; } // ← добавили
 
         public FoodCreator(int mapWidth, int mapHeight, Dictionary<char, int> symbolScores)
         {
@@ -24,7 +26,7 @@ namespace Snake
             this.mapHeight = mapHeight;
             this.symbolScores = symbolScores;
             this.foodSymbols = symbolScores.Keys.ToList();
-            this.obstacles = new List<Point>(); 
+            this.obstacles = new List<Point>();
         }
 
         public FoodCreator(int mapWidth, int mapHeight, Dictionary<char, int> symbolScores, List<Point> obstacles)
@@ -50,13 +52,16 @@ namespace Snake
                 p = new Point(x, y, sym);
             } while (obstacles.Any(o => o.x == p.x && o.y == p.y));
 
+            CurrentFood = p; // ← сохраняем текущую еду
             return p;
         }
+
         public int GetScore(char sym)
         {
             return symbolScores.TryGetValue(sym, out int score) ? score : 0;
         }
     }
+
 
 }
 

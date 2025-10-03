@@ -11,263 +11,11 @@ namespace Snake
 {
     class SnakeMain
     {
-        static int currentLevel = 1;
-        static int mapWidth;
-        static int mapHeight;
-        static int speed;
-
-        static void LevelUp(ref Walls walls, Snake snake,
-                    ref FoodCreator foodCreator,
-                    Dictionary<char, int> symbolScores,
-                    int score)
-        {
-            if (currentLevel < 3)
-            {
-                currentLevel++;
-                (mapWidth, mapHeight) = currentLevel switch
-                {
-                    1 => (60, 20),
-                    2 => (80, 25),
-                    3 => (100, 30),
-                    _ => (80, 25)
-                };
-
-                speed = currentLevel switch
-                {
-                    1 => 150,
-                    2 => 100,
-                    3 => 70,
-                    _ => 20
-                };
-
-                Console.SetWindowSize(mapWidth, mapHeight);
-                Console.SetBufferSize(mapWidth, mapHeight);
-                Console.Clear();
-
-                walls = new Walls(mapWidth, mapHeight);
-                walls.Draw();
-                snake.Draw();
-                foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores);
-
-                DrawScore(score);
-                DrawLevel(currentLevel);
-            }
-        }
-
-        static void DrawLevel(int level)
-        {
-            Console.SetCursorPosition(mapWidth - 12, 0);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Level: " + level);
-            Console.ResetColor();
-        }
-
-        
-        static bool isEndlessMode = false;
         static void Main(string[] args)
         {
-            GameSounds sounds = new GameSounds();
-            NameService nameService = new NameService();
-            ScoreManager scoreManager = new ScoreManager();
-            MenuService menuService = new MenuService();
-
-            int startLevel = menuService.ShowDifficultyMenu();
-            currentLevel = startLevel;
-            Console.Clear();
-
-            (mapWidth, mapHeight) = startLevel switch
-            {
-                1 => (60, 20),
-                2 => (80, 25),
-                3 => (100, 30),
-                _ => (80, 25)
-            };
-
-            speed = startLevel switch
-            {
-                1 => 150,
-                2 => 100,
-                3 => 70,
-                _ => 20
-            };
-
-            Console.SetWindowSize(mapWidth, mapHeight);
-            Console.SetBufferSize(mapWidth, mapHeight);
-            Console.Clear();
-
-            Walls walls = new Walls(mapWidth, mapHeight);
-            walls.Draw();
-
-
-            Obstacles obstacles = new Obstacles(mapWidth, mapHeight, 10);
-            obstacles.Draw();
-
-            Point p = new Point(4, 5, '*');
-            Snake snake = new Snake(p, 4, Direction.RIGHT);
-            snake.Draw();
-
-            var symbolScores = new Dictionary<char, int>
-            {
-                { '$', 25 },
-                { '@', 25 },
-                { '#', 25 },
-                { '¤', 25 }
-            };
-
-
-            FoodCreator foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
-            Point food = foodCreator.CreateFood();
-            food.Draw();
-
-            int score = 0;
-
-            DrawScore(score);
-            DrawLevel(currentLevel);
-
-            sounds.PlayBackground();
-
-            while (true)
-            {
-                if (snake.Eat(food))
-                {
-                    int foodScore = foodCreator.GetScore(food.sym);
-                    score += foodScore;
-
-                    sounds.PlayEat();
-                    DrawScore(score);
-                    DrawLevel(currentLevel);
-
-                    food = foodCreator.CreateFood();
-                    food.Draw();
-
-                    if (!isEndlessMode && score >= 5 * currentLevel && currentLevel < 3)
-                    {
-                        LevelUp(ref walls, snake, ref foodCreator, symbolScores, score);
-                        obstacles = new Obstacles(mapWidth, mapHeight, 10); 
-                        obstacles.Draw();
-
-                        foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
-                        food = foodCreator.CreateFood();
-                        food.Draw();
-                    }
-
-           
-                    if (score >= 25 && !isEndlessMode)
-                    {
-                        Console.Clear();
-                        ShowVictoryMessage();
-                        Thread.Sleep(2000);
-
-                        Console.WriteLine("Kas soovid mängida edasi lõpmatus režiimis? (jah/ei)");
-                        string vastus = Console.ReadLine();
-                        if (vastus.ToLower() == "jah" || vastus.ToLower() == "j")
-                        {
-                            isEndlessMode = true;
-                            Console.Clear();
-
-
-                            Console.SetWindowSize(mapWidth, mapHeight);
-                            Console.SetBufferSize(mapWidth, mapHeight);
-                            Console.Clear();
-
-                            walls.Draw();
-                            obstacles.Draw();
-
-                            snake = new Snake(new Point(4, 5, '*'), 4, Direction.RIGHT);
-                            snake.Draw();
-
-                            foodCreator = new FoodCreator(mapWidth, mapHeight, symbolScores, obstacles.GetObstacles());
-                            food = foodCreator.CreateFood();
-                            food.Draw();
-
-                            DrawScore(score);
-
-                            continue;
-                        }
-                        else
-                        {
-                            sounds.PlayGameOver();
-                            Console.Clear();
-
-                            string userName = nameService.AskUserName();
-                            scoreManager.SaveScore(userName, score);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    snake.Move();
-                }
-
-                if (walls.IsHit(snake) || snake.IsHitTail() || obstacles.IsHit(snake.GetHead()))
-                {
-                    sounds.PlayGameOver();
-                    Console.Clear();
-                    WriteGameOver();
-
-                    string userName = nameService.AskUserName();
-                    scoreManager.SaveScore(userName, score);
-
-                    break;
-                }
-
-                Thread.Sleep(speed);
-
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    snake.HandleKey(key.Key);
-                }
-            }
-
-            string gameResults = scoreManager.ReadScores();
-            Console.Clear();
-            Console.WriteLine(gameResults);
-            Console.ReadLine();
+            GameEngine game = new GameEngine();
+            game.Run();
         }
-
-        static void DrawScore(int score)
-        {
-            Console.SetCursorPosition(0, 0);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("Score:      ");
-            Console.SetCursorPosition(7, 0);
-            Console.Write(score);
-            Console.ResetColor();
-        }
-
-        static void WriteGameOver()
-        {
-
-            int xOffset = 40;
-            int yOffset = 12;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.SetCursorPosition(xOffset, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            WriteText("         GAME OVER          ", xOffset + 1, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            Console.ResetColor();
-        }
-        static void ShowVictoryMessage()
-        {
-
-            int xOffset = 40;
-            int yOffset = 12;
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.SetCursorPosition(xOffset, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            WriteText("          YOU WIN!           ", xOffset + 1, yOffset++);
-            WriteText("============================", xOffset, yOffset++);
-            Console.ResetColor();
-        }
-
-        static void WriteText(string text, int xOffset, int yOffset)
-        {
-            Console.SetCursorPosition(xOffset, yOffset);
-            Console.WriteLine(text);
-        }
-
     }
 }
 
@@ -287,7 +35,7 @@ namespace Snake
 
 //Звуковые эффекты – Добавляем звуки при поедании пищи или столкновении с препятствием. +++++++++++
 
-//Записывается имя игрока и отдельно счет, так же время начала и конца игры. ++++++++++++++
+//Записывается имя игрока и отдельно счет, в конце игры. ++++++++++++++
 
 // Реализовано красивое менюю. ++++++++++++++++++
 
@@ -297,6 +45,30 @@ namespace Snake
 
 // Возможность сохранять и смотреть результаты прошлых игр. ++++++++++++++++
 
+
+
+
+
+
+//Punktide loendur – Suurendame punkte toidu söömisel ja kuvame need ekraanil. ++++++++++++++
+
+//Toidu tüübid – Lisame erinevaid toidu tüüpe (normaalne, kahjulik, kasulik) erinevate mõjudega (vähendavad punkte või +2 punkti asemel +1). +++++++++
+
+//Raskusastmed – Raskusaste muutub taseme järgi: kiirus ja kaardi suurus suurenevad. +++++++++++++
+
+//Erinevad tasemed – kõrgemal tasemel suurendame taset ja kiirendame mängu. 
+
+//Heli efektid – Lisame helid toidu söömisel või takistusega kokkupõrkel. +++++++++++
+
+//Salvestatakse mängija nimi ja eraldi punktisumma. ++++++++++++++
+
+// Rakendatud on ilus menüü. ++++++++++++++++++
+
+// Kaotuse või võidu väljatoomine (3. taseme ja 25 punkti saavutamisel).++++++++++++++
+
+// Võimalus mängida pärast võitu lõputus režiimis. ++++++++++++++++
+
+// Võimalus salvestada ja vaadata eelmiste mängude tulemusi. ++++++++++++++++
 
 
 

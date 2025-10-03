@@ -9,7 +9,7 @@ using Snake;
 
 namespace Snake
 {
-    class Snake : Figure
+    public class Snake : Figure
     {
         Direction direction;
 
